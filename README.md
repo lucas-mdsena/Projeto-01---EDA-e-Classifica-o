@@ -1,5 +1,5 @@
 # dataanalysisproject01
 
-Projeto em desenvolvimento.
+On-going project.
 
-Este é meu primeiro projeto de data science. O objetivo é utilizar ferramentas de EDA, clustering e classificação para analisar uma base de dados de pacientes e suas condições médicas do sistema cardiovascular.
+This project goal is to perform an EDA in a database, that contains medical information from pacients and thei diagnosis for a heart disease possibility, based on the conditions. Also to cluster the pacients in two groups an to train a model to classificate a heart disease possibility.
