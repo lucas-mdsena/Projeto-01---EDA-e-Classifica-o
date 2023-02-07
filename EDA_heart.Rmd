@@ -27,11 +27,10 @@ DATASET INFO
 ```{r}
 data %>% str()
 ```
-The dataset contains informations of 303 pacients and 13 features about their heart system conditions. There is also one last feature with the diagnosis of a possible heart disease. 
+The dataset contains informations of 303 patients and 13 features about their heart system conditions. There is also one last feature with the diagnosis of a possible heart disease. 
 
-Dataset description
+DATASET DESCRIPTION
 
-Descrição das variáveis.
 age: Age of the patient
 sex: Sex of the patient
 cp: Chest Pain type
@@ -253,6 +252,7 @@ data_cluster %>% head()
 data_cluster_scale <- data_cluster %>% scale() %>% data.frame()
 ```
 
+CREATING THE MODEL
 As there are 2 diagnosis possibilities, a kmeans algorithm with 2 groups is going to be used
 ```{r}
 set.seed(0)
@@ -260,7 +260,7 @@ cluster <- kmeans(data_cluster_scale,
                            centers = 2)
 ```
 
-Result
+RESULT
 ```{r}
 fviz_cluster(object = cluster,
              data = data_cluster_scale,
@@ -283,8 +283,7 @@ data_comparison[,14:15] %>% table()
 ```
 The kmeans clustering precision was 73.93%, compared to the diagnosis.
 
-
-Visualizing the clustering result
+VISUALIZING THE CLUSTERING RESULT
 ```{r}
 
 data_comparison$cluster <- data_comparison$cluster %>% factor(levels = c(1, 2),
@@ -311,6 +310,8 @@ g2 <- data_comparison %>%
 
 grid.arrange(g1, g2)
 ```
+
+
 
 CLASSIFICATION
 
