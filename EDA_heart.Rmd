@@ -1,0 +1,361 @@
+---
+title: "Projeto1"
+author: "Lucas Miranda de Sena"
+date: '2023-01-25'
+output: html_document
+---
+EXPLORATORY DATA ANALYSIS
+
+PACKAGES
+```{r, echo=FALSE}
+library(tidyverse)
+library(knitr)
+library(kableExtra)
+library(ggridges)
+library(gridExtra)
+```
+
+READING DATA
+```{r}
+data <- read.csv("heart.csv",
+                           header = T,
+                           sep = ",",
+                           dec = ".")
+```
+
+DATASET INFO
+```{r}
+data %>% str()
+```
+The dataset contains informations of 303 pacients and 13 features about their heart system conditions. There is also one last feature with the diagnosis of a possible heart disease. 
+
+Dataset description
+
+Descrição das variáveis.
+age: Age of the patient
+sex: Sex of the patient
+cp: Chest Pain type
+   0: typical angina
+   1: atypical angina
+   2: non-anginal pain
+   3: asymptomatic
+trtbps: resting blood pressure (mmHg)
+chol: cholesterol (mg/dl)
+fbs: fasting blood sugar > 120 mg/dl
+   1 = true
+   0 = false
+restecg: resting electrocardiographic results   
+   0: normal
+   1: having ST-T wave abnormality (T wave inversions and/or ST elevation or depression of > 0.05 mV)
+   2: showing probable or definite left ventricular hypertrophy by Estes' criteria
+thalachh: maximum heart rate achieved
+exng: exercise induced angina
+   1 = yes
+   0 = no
+oldpeak: ST depression induced by exercise relative to rest
+slp: the slope of the peak exercise ST segment
+   0 = unsloping
+   1 = flat
+   2 = downsloping
+caa: number of major vessels (0-3)
+thall: thalassemia
+   0 = null
+   1 = fixed defect
+   2 = normal
+   3 = reversable defect
+output: diagnosis of heart disease
+   0: < 50% diameter narrowing. less chance of heart disease
+   1: > 50% diameter narrowing. more chance of heart disease
+
+   
+There are no missing values in this dataset and all the features are numerical (integers and floats). 
+However, some features are integers, but the numbers represents categories. In order to peform a good EDA, a data transformation is necessary.
+
+
+DATA TRANSFORMATION
+```{r}
+data_eda <- data
+```
+
+```{r}
+data_eda$sex <- data_eda$sex %>% 
+  factor(levels = c(1, 0),
+         labels = c('M', 'F'))
+
+data_eda <- data_eda %>% 
+  rename('chest_pain_type' = 'cp')
+data_eda$chest_pain_type <- data_eda$chest_pain_type %>% 
+  factor(levels = c(0, 1, 2, 3),labels = c('typical angina',
+                                           'atypical angina',
+                                           'non-anginal pain',
+                                           'asymptomatic'))
+
+data_eda <- data_eda %>% 
+  rename('fasting_blood_sugar' = 'fbs')
+data_eda$fasting_blood_sugar <- data_eda$fasting_blood_sugar %>% 
+  factor(levels = c(1, 0),
+         labels = c('yes',
+                    'no'))
+
+data_eda$restecg <- data_eda$restecg %>% 
+  factor(levels = c(0,1,2),
+         labels = c('normal',
+                    'wave abnormality',
+                    'probable left ventricular hypertrophy'))
+
+data_eda$exng <- data_eda$exng %>% 
+  factor(levels = c(0,1),
+         labels = c('yes',
+                    'no'))
+
+data_eda$slp <- data_eda$slp %>% 
+  factor(levels = c(0,1,2),
+         labels = c('usloping',
+                    'flat',
+                    'downsloping'))
+
+data_eda$thall <- data_eda$thall %>% 
+  factor(levels = c(0,1,2,3),
+         labels = c('null',
+                    'fixed defect',
+                    'normal', 
+                    'reversable defect'))
+
+data_eda$output <- data_eda$output %>%
+  factor(levels = c(0,1),
+         labels = c('Less chance of disease',
+                    'More chance of disease'))
+```
+
+RENAMING FEATURES
+```{r}
+data_eda <- data_eda %>%
+  rename('cholesterol' = 'chol',
+         'max_heart_rate' = 'thalachh',
+         'slope' = 'slp',
+         'number_of_major_vessels' = 'caa',
+         'diagnosis' = 'output')
+```
+
+```{r}
+data_eda %>% summary()
+```
+
+DATA VISUALIZATION
+
+Exploring the correlation of age with other features
+```{r}
+data_eda %>%
+  ggplot() +
+  geom_point(aes(x = cholesterol,
+                 y = age,
+                 color = sex)) +
+  labs(title = 'Correlation between age and cholesterol',
+       x = 'Cholesterol (mg/l)',
+       y = 'Age') + 
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+```
+Taking a look a the graph, it can't be cofirmed that women or men would have a higher cholesterol level.
+We can take a better look at the outlier.
+```{r}
+data_eda %>%
+  filter(cholesterol>500) %>% 
+  kable(align = 'c') %>%
+  kable_classic(html_font = 'courier new') %>% 
+  kable_styling(bootstrap_options = 'striped',
+                font_size = 14)
+```
+
+
+```{r}
+data_eda %>% 
+  ggplot() +
+  geom_point(aes(y = age,
+                 x = trtbps,
+                 color = fasting_blood_sugar)) +
+  geom_smooth(aes(y = age,
+                  x= trtbps),
+              method = 'lm',
+              se = F) +
+  labs(title = 'Correlation between age and resting blood pressure',
+       x = 'Resting Blood Pressure (mmHG)',
+       y = 'Age') + 
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+```
+```{r}
+data_eda %>% 
+  ggplot() +
+  geom_point(aes(y = age,
+                 x = max_heart_rate)) +
+  geom_smooth(aes(y = age,
+                  x = max_heart_rate),
+              method = 'lm',
+              se = F) +
+    labs(title = 'Correlation between age and max heart rate',
+       x = 'Max Heart Rate (bpm)',
+       y = 'Age') +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+```
+This time, a negative correlation is seen. Elder people achive lower heart rate.
+
+Checking the distribution of some categorical features
+```{r}
+data_eda %>% 
+  ggplot(aes(x=age,
+             y=diagnosis,
+             fill = diagnosis)) +
+  geom_density_ridges() +
+  labs(title = 'Concentration of heart disease chance per age',
+       x = 'Age',
+       y = 'Diagnosis') +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+```
+A high concentration of disease chance is between 50 and 60 years old.
+
+```{r}
+data_eda %>% 
+  ggplot(aes(x=age,
+             y=chest_pain_type,
+             fill = chest_pain_type)) +
+  geom_density_ridges() +
+  labs(title = 'Concentration of chest pain type per age',
+       x = 'Age',
+       y = 'Chest pain type') +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+```
+In the same way, there is a biger concentration in elder people.
+
+
+
+
+CLUSTERING
+
+As the symptoms shown by the pacients lead to the diagnosis of a heart disease, they can be used in a non supervised learning to cluster the patients by the simptoms. The result might be used by medical teams to choose the best treatment.
+
+PACKAGES
+```{r, echo=FALSE}
+library(factoextra)
+```
+
+DATA PREPARATION
+The clustering dataset wont have the diagnosis feature, and the categorical features will not be used as well.
+```{r}
+data_cluster <- data_eda %>% select(1,4:5,8,10,12)
+data_cluster %>% head()
+```
+
+```{r}
+data_cluster_scale <- data_cluster %>% scale() %>% data.frame()
+```
+
+As there are 2 diagnosis possibilities, a kmeans algorithm with 2 groups is going to be used
+```{r}
+set.seed(0)
+cluster <- kmeans(data_cluster_scale,
+                           centers = 2)
+```
+
+Result
+```{r}
+fviz_cluster(object = cluster,
+             data = data_cluster_scale,
+             repel = T,
+             geom = "point") +
+  labs(title = "Patient Clustering") +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect(fill = "grey97"))
+```
+Joining the result with the dataset
+```{r}
+groups <- cluster$cluster
+data_comparison <- data_eda
+data_comparison$cluster <- groups
+data_comparison %>% head()
+```
+
+```{r}
+data_comparison[,14:15] %>% table()
+```
+The kmeans clustering precision was 73.93%, compared to the diagnosis.
+
+
+Visualizing the clustering result
+```{r}
+
+data_comparison$cluster <- data_comparison$cluster %>% factor(levels = c(1, 2),
+                                                              labels = c("1", "2"))
+g1 <- data_comparison %>% 
+  ggplot() +
+  geom_point(aes(y = age,
+                 x = max_heart_rate,
+                 color = diagnosis)) +
+    labs(x = 'Max Heart Rate (bpm)',
+         y = 'Age') +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+
+g2 <- data_comparison %>% 
+  ggplot() +
+  geom_point(aes(y = age,
+                 x = max_heart_rate,
+                 color = cluster)) +
+    labs(x = 'Max Heart Rate (bpm)',
+         y = 'Age') +
+  theme_classic(base_size = 12) +
+  theme(panel.background = element_rect('gray97'))
+
+grid.arrange(g1, g2)
+```
+
+CLASSIFICATION
+
+PACKAGES
+```{r}
+library(class)
+library(gmodels)
+```
+
+DATA PREPARATION
+```{r}
+data_classification <- data
+data_classification$output <- data_classification$output %>% factor(levels = c(0,1),
+                                                                labels = c('less chance of disease', 'more chance of disease'))
+
+data_classification_scale <- data_classification[-14] %>% scale() %>% data.frame()
+
+```
+
+CREATING TRAINING AND TEST DATASETS
+```{r}
+set.seed(1)
+ind <- sample(2, nrow(data_classification_scale), replace = T, prob = c(0.8, 0.2))
+train <- data_classification_scale[ind == 1,]
+test <- data_classification_scale[ind == 2,]
+
+train_labels <- data_classification[ind == 1, 14]
+test_labels <- data_classification[ind == 2, 14]
+```
+
+TRAINING THE MODEL AND CHECKING THE ACCURACY
+```{r}
+model <- knn(train = train,
+             test = test,
+             cl = train_labels,
+             k = 15)
+
+CrossTable(x = test_labels,
+           y = model,
+           prop.chisq = F)
+```
+
+The model's accuracy is 75.51%.
+
+
+
+
+
